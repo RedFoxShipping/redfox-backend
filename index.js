@@ -1,31 +1,32 @@
-// index.js
-require('dotenv').config({ path: './.env' });
 const express = require('express');
-const db = require('./db');
-
 const app = express();
-const port = 3000;
+const db = require('./db');
+require('dotenv').config();
+
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('🦊 Welcome to Redfox Courier API!');
-});
-
+// Test route to check DB
 app.get('/test-db', async (req, res) => {
   try {
     const result = await db.query('SELECT NOW()');
-    res.json({ success: true, data: result.rows });
-  } catch (err) {
-    console.error('🔥 FULL ERROR:', err);
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Unknown error',
-      details: err.stack,
-    });
+    res.json({ success: true, time: result.rows[0] });
+  } catch (error) {
+    res.json({ success: false, error: error.message, details: error.stack });
   }
 });
 
-app.listen(port, () => {
-  console.log(`🦊 Redfox Courier API running on port ${port}`);
+// 🔥 Your new webhook route goes here
+app.post('/webhook', express.json(), (req, res) => {
+  console.log('Incoming WhatsApp message:', req.body);
+
+  // Respond back to Gupshup
+  res.status(200).json({ success: true });
 });
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🦊 Redfox Courier API running on port ${PORT}`);
+});
+
